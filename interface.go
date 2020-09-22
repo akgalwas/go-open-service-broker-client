@@ -82,6 +82,8 @@ type ClientConfiguration struct {
 	CAData []byte
 	// Verbose is whether the client will log to klog.
 	Verbose bool
+
+	DoRequestFunc DoRequestFunc
 }
 
 // DefaultClientConfiguration returns a default ClientConfiguration:

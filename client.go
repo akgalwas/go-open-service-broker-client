@@ -100,7 +100,13 @@ func NewClient(config *ClientConfiguration) (Client, error) {
 		Verbose:             config.Verbose,
 		httpClient:          httpClient,
 	}
-	c.doRequestFunc = c.doRequest
+
+	if config.DoRequestFunc == nil {
+		c.doRequestFunc = c.doRequest
+	} else {
+		c.doRequestFunc = config.DoRequestFunc
+	}
+
 
 	if config.AuthConfig != nil {
 		if config.AuthConfig.BasicAuthConfig == nil && config.AuthConfig.BearerConfig == nil {
@@ -118,7 +124,7 @@ func NewClient(config *ClientConfiguration) (Client, error) {
 
 var _ CreateFunc = NewClient
 
-type doRequestFunc func(request *http.Request) (*http.Response, error)
+type DoRequestFunc func(client *http.Client, request *http.Request) (*http.Response, error)
 
 // client provides a functional implementation of the Client interface.
 type client struct {
@@ -130,7 +136,7 @@ type client struct {
 	Verbose             bool
 
 	httpClient    *http.Client
-	doRequestFunc doRequestFunc
+	doRequestFunc DoRequestFunc
 }
 
 var _ Client = &client{}
@@ -207,11 +213,11 @@ func (c *client) prepareAndDo(method, URL string, params map[string]string, body
 		klog.Infof("broker %q: doing request to %q", c.Name, URL)
 	}
 
-	return c.doRequestFunc(request)
+	return c.doRequestFunc(c.httpClient, request)
 }
 
-func (c *client) doRequest(request *http.Request) (*http.Response, error) {
-	return c.httpClient.Do(request)
+func (c *client) doRequest(client *http.Client,request *http.Request) (*http.Response, error) {
+	return client.Do(request)
 }
 
 // unmarshalResponse unmartials the response body of the given response into

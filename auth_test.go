@@ -75,8 +75,8 @@ func TestBearerAuth(t *testing.T) {
 	}
 }
 
-func addBasicAuthCheck(t *testing.T, name string, authConfig *BasicAuthConfig, f doRequestFunc) doRequestFunc {
-	return func(request *http.Request) (*http.Response, error) {
+func addBasicAuthCheck(t *testing.T, name string, authConfig *BasicAuthConfig, f DoRequestFunc) DoRequestFunc {
+	return func(client *http.Client, request *http.Request) (*http.Response, error) {
 		u, p, ok := request.BasicAuth()
 		if !ok && authConfig != nil {
 			t.Errorf("%s: Expected basic auth in request but none found", name)
@@ -92,19 +92,19 @@ func addBasicAuthCheck(t *testing.T, name string, authConfig *BasicAuthConfig, f
 			}
 		}
 
-		return f(request)
+		return f(client, request)
 	}
 }
 
-func addBearerAuthCheck(t *testing.T, name string, authConfig *BearerConfig, f doRequestFunc) doRequestFunc {
-	return func(request *http.Request) (*http.Response, error) {
+func addBearerAuthCheck(t *testing.T, name string, authConfig *BearerConfig, f DoRequestFunc) DoRequestFunc {
+	return func(client *http.Client, request *http.Request) (*http.Response, error) {
 		auth := request.Header.Get("Authorization")
 		if auth == "" {
 			if authConfig != nil {
 				t.Errorf("%s: Expected bearer auth in request but none found", name)
 				return nil, errWalkingGhost
 			}
-			return f(request)
+			return f(client, request)
 		}
 		token, ok := parseBearerToken(auth)
 		if !ok && authConfig != nil {
@@ -117,7 +117,7 @@ func addBearerAuthCheck(t *testing.T, name string, authConfig *BearerConfig, f d
 			}
 		}
 
-		return f(request)
+		return f(client, request)
 	}
 }
 

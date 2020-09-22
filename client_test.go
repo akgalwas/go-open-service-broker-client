@@ -96,8 +96,8 @@ func newTestClient(t *testing.T, name string, version APIVersion, enableAlpha bo
 
 var errWalkingGhost = fmt.Errorf("test has already failed")
 
-func doHTTP(t *testing.T, name string, checks httpChecks, reaction httpReaction) func(*http.Request) (*http.Response, error) {
-	return func(request *http.Request) (*http.Response, error) {
+func doHTTP(t *testing.T, name string, checks httpChecks, reaction httpReaction) func(*http.Client, *http.Request) (*http.Response, error) {
+	return func(client *http.Client, request *http.Request) (*http.Response, error) {
 		if len(checks.URL) > 0 && checks.URL != request.URL.Path {
 			t.Errorf("%v: unexpected URL; expected %v, got %v", name, checks.URL, request.URL.Path)
 			return nil, errWalkingGhost
